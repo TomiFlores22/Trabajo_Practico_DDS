@@ -1,32 +1,33 @@
-import { Datatypes, Model } from 'sequelize';
-import { sequelize } from '../config/database.js';
+import { DataTypes, Model } from 'sequelize';
+import { sequelize } from '../config/db.js';
 
 class Usuario extends Model {}
 
 Usuario.init(
     {
         id: {
-            type: Datatypes.INTEGER,
+            type: DataTypes.INTEGER,
             primaryKey: true,   
             autoIncrement: true,},
         nombre: {
-            type: Datatypes.STRING,
+            type: DataTypes.STRING,
             allowNull: false,
         },
         email: {
-            type: Datatypes.STRING,
+            type: DataTypes.STRING,
+            unique: true,
             allowNull: false
         },
         passwordHash: {
-            type: Datatypes.STRING,
+            type: DataTypes.STRING,
             allowNull: false
         },
         rol: {
-            type: Datatypes.STRING,
+            type: DataTypes.STRING,
             allowNull: false
         },
         activo: {
-            type: Datatypes.BOOLEAN,
+            type: DataTypes.BOOLEAN,
             defaultValue: true
         }
     },

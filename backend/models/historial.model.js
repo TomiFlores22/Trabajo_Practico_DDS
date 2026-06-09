@@ -1,46 +1,46 @@
-import { Datatypes, Model } from 'sequelize';
-import { sequelize } from '../config/database.js';
+import { DataTypes, Model } from 'sequelize';
+import { sequelize } from '../config/db.js';
 
-class Usuario extends Model {}
+class Historial extends Model {}
 
-Usuario.init(
+Historial.init(
     {
         id: {
-            type: Datatypes.INTEGER,
+            type: DataTypes.INTEGER,
             primaryKey: true,   
             autoIncrement: true,
         },
         solicitudId: {
-            type: Datatypes.INTEGER,
+            type: DataTypes.INTEGER,
             allowNull: false,
         },
         usuarioId: {
-            type: Datatypes.INTEGER,
+            type: DataTypes.INTEGER,
             allowNull: false,
         },
         accion: {
-            type: Datatypes.STRING,
+            type: DataTypes.STRING,
             allowNull: false,
         },
         fechaHora: {
-            type: Datatypes.DATETIME,
+            type: DataTypes.DATE,
             allowNull: false,
         },
         valorAnterior: {
-            type: Datatypes.STRING,
+            type: DataTypes.STRING,
             allowNull: true,
         },
         valorNuevo: {
-            type: Datatypes.STRING,
+            type: DataTypes.STRING,
             allowNull: true,
         },
     },
     {
         sequelize,
-        modelName: 'Usuario',
-        tableName: 'usuarios',
+        modelName: 'Historial',
+        tableName: 'historial_solicitudes',
         timestamps: false,
     }
 );
 
-export default Usuario;
+export default Historial;

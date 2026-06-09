@@ -1,41 +1,41 @@
-import { Datatypes, Model } from 'sequelize';
-import { sequelize } from '../config/database.js';
+import { DataTypes, Model } from 'sequelize';
+import { sequelize } from '../config/db.js';
 
 class Solicitud extends Model {}
 
 Solicitud.init(
     {
         id: {
-            type: Datatypes.INTEGER,
+            type: DataTypes.INTEGER,
             primaryKey: true,   
             autoIncrement: true,
         },
         equipoId: {
-            type: Datatypes.INTEGER,
+            type: DataTypes.INTEGER,
             allowNull: false,
         },
         usuarioId: {
-            type: Datatypes.INTEGER,
+            type: DataTypes.INTEGER,
             allowNull: false,
         },
         fechaRetiro: {
-            type: Datatypes.DATE,
+            type: DataTypes.DATE,
             allowNull: false,
         },
         fechaDevolucion: {
-            type: Datatypes.DATE,
+            type: DataTypes.DATE,
             allowNull: false,
         },
         motivo: {
-            type: Datatypes.STRING,
+            type: DataTypes.STRING,
             allowNull: false,
         },
         estado: {
-            type: Datatypes.STRING,
+            type: DataTypes.STRING,
             allowNull: false,
         },
         autorizadoPor: {
-            type: Datatypes.STRING,
+            type: DataTypes.INTEGER,
             allowNull: true,
         },
     },
