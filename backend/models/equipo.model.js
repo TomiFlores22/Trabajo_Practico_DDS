@@ -1,37 +1,38 @@
-import { Datatypes, Model } from 'sequelize';
-import { sequelize } from '../config/database.js';
+import { DataTypes, Model } from 'sequelize';
+import { sequelize } from '../config/db.js';
 
 class Equipo extends Model {}
 
 Equipo.init(
     {
         id: {
-            type: Datatypes.INTEGER,
+            type: DataTypes.INTEGER,
             primaryKey: true,   
             autoIncrement: true,
         },
         codigoInventario: {
-            type: Datatypes.STRING,
+            type: DataTypes.STRING,
+            unique: true,
             allowNull: false,
         },
         nombre: {
-            type: Datatypes.STRING,
+            type: DataTypes.STRING,
             allowNull: false,
         },
         categoria: {
-            type: Datatypes.STRING,
+            type: DataTypes.STRING,
             allowNull: false,
         },
         estado: {
-            type: Datatypes.STRING,
+            type: DataTypes.STRING,
             allowNull: false,
         },
         ubicacion: {
-            type: Datatypes.STRING,
+            type: DataTypes.STRING,
             allowNull: false,
         },
         requiereAutorizacion: {
-            type: Datatypes.BOOLEAN,
+            type: DataTypes.BOOLEAN,
             defaultValue: false
         }
     },
