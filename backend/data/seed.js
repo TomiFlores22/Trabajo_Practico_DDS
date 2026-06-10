@@ -1,3 +1,4 @@
+import bcrypt from "bcryptjs";
 import Usuario from '../models/usuario.model.js';
 import Equipo from '../models/equipo.model.js';
 import Solicitud from '../models/solicitud.model.js';
@@ -7,7 +8,7 @@ import  sequelize  from '../config/db.js';
 const usuariosSeed = [
     {
         nombre: 'Juan Pérez',
-        correo: 'juan.perez@Gmail.com',
+        correo: 'juan.perez@gmail.com',
         passwordHash: 'Contra1',
         rol: 'admin',
         activo: true
@@ -322,6 +323,14 @@ async function ejecutarSeed() {
 
         await sequelize.sync({ force: true });
 
+        // Hashear las contraseñas de los usuarios semilla
+        for (const usuario of usuariosSeed) {
+            usuario.passwordHash = await bcrypt.hash(
+                usuario.passwordHash,
+                10
+            );
+        }
+
         await Usuario.bulkCreate(usuariosSeed);
 
         await Equipo.bulkCreate(equiposSeed);
@@ -331,11 +340,16 @@ async function ejecutarSeed() {
         await Historial.bulkCreate(historialSeed);
 
         console.log("¡PROCESO SEED FINALIZADO CON ÉXITO!");
+
     } catch (error) {
+
         console.error("Error al cargar los datos semilla:");
         console.error(error);
+
     } finally {
+
         await sequelize.close();
+
     }
 }
 
