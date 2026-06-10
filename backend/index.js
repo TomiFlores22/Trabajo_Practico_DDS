@@ -8,6 +8,8 @@ import historialRoutes from "./routes/historial.routes.js";
 
 import { errorHandler } from "./middlewares/error.middleware.js";
 
+import "./models/asociaciones.js"
+
 const app = express();
 
 app.use(express.json());
@@ -28,6 +30,8 @@ app.get("/", (req, res) => {
 app.use(errorHandler);
 
 const PORT = 3000;
+
+
 
 sequelize.sync()
   .then(() => {
