@@ -19,11 +19,11 @@ Solicitud.init(
             allowNull: false,
         },
         fechaRetiro: {
-            type: DataTypes.DATE,
+            type: DataTypes.DATEONLY,
             allowNull: false,
         },
         fechaDevolucion: {
-            type: DataTypes.DATE,
+            type: DataTypes.DATEONLY,
             allowNull: false,
         },
         motivo: {
