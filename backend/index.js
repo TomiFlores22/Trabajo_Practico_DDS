@@ -5,17 +5,25 @@ import authRoutes from "./routes/auth.routes.js";
 import equiposRoutes from "./routes/equipos.routes.js";
 import solicitudesRoutes from "./routes/solicitudes.routes.js";
 
+import { errorHandler } from "./middlewares/error.middleware.js";
+
 const app = express();
 
 app.use(express.json());
+
 
 app.use("/api/auth", authRoutes);
 app.use("/api/equipos", equiposRoutes);
 app.use("/api/solicitudes", solicitudesRoutes);
 
+
+
 app.get("/", (req, res) => {
   res.json({ mensaje: "API funcionando" });
 });
+
+
+app.use(errorHandler);
 
 const PORT = 3000;
 
