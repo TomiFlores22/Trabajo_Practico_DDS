@@ -13,7 +13,7 @@ Usuario.init(
             type: DataTypes.STRING,
             allowNull: false,
         },
-        email: {
+        correo: {
             type: DataTypes.STRING,
             unique: true,
             allowNull: false
