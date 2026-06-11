@@ -1,5 +1,7 @@
 import jwt from "jsonwebtoken";
 
+const JWT_SECRET = process.env.JWT_SECRET || "mi-secreto";
+
 export const verificarToken = (req, res, next) => {
     const authHeader = req.headers.authorization;
 
