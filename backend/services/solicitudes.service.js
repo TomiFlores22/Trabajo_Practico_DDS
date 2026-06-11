@@ -52,11 +52,11 @@ class SolicitudesService {
     }
 
 
-    async obtenerTodas(query) {
+    async obtenerTodas(query, usuarioLogueado) {
         const { estado, equipoID, desde, hasta, page = 1, limit = 5, sortBy = 'fechaRetiro', order = 'ASC' } = query;
 
         const filtros = {};
-        if (usuarioLogueado.rol !== 'Admin') {
+        if (usuarioLogueado.rol !== 'admin') {
             filtros.usuarioId = usuarioLogueado.id;
         }
 
@@ -93,14 +93,14 @@ class SolicitudesService {
     }
 
 
-    async obtenerPorId(id) {
+    async obtenerPorId(id, usuarioLogueado) {
         const solicitud = await Solicitud.findByPk(id, {
             include: [{ model: Equipo }]
         });
         if (!solicitud) {
             throw new Error('Solicitud no encontrada.');
         }
-        if (usuarioLogueado.rol !== 'Admin' && solicitud.usuarioId !== usuarioLogueado.id) {
+        if (usuarioLogueado.rol !== 'admin' && solicitud.usuarioId !== usuarioLogueado.id) {
             throw new Error('Acceso denegado: No tienes permisos para visualizar esta solicitud.');
         }
         return solicitud;
@@ -108,10 +108,12 @@ class SolicitudesService {
 
 
     async actualizar(id, datos, usuarioModificador) {
-        const solicitud = await this.obtenerPorId(id);
+        const solicitud = await this.obtenerPorId(id, usuarioModificador);
 
         const estadoAnterior = solicitud.estado;
         const nuevoEstado = datos.estado;
+
+        
 
         if (nuevoEstado && nuevoEstado !== estadoAnterior) {
             if (nuevoEstado && nuevoEstado !== estadoAnterior) {
@@ -131,14 +133,14 @@ class SolicitudesService {
                 }
 
                 if (['Aprobada', 'Rechazada'].includes(nuevoEstado)) {
-                    if (usuarioModificador.rol !== 'Admin') {
+                    if (usuarioModificador.rol !== 'admin') {
                         throw new Error('Acceso denegado: Solo los administradores pueden Aprobar o Rechazar solicitudes.');
                     }
                     solicitud.autorizadoPor = usuarioModificador.id;
                 }
 
                 if (nuevoEstado === 'Cancelada') {
-                    if (usuarioModificador.rol !== 'Admin' && solicitud.usuarioId !== usuarioModificador.id) {
+                    if (usuarioModificador.rol !== 'admin' && solicitud.usuarioId !== usuarioModificador.id) {
                         throw new Error('Acceso denegado: No puedes cancelar una solicitud que no te pertenece.');
                     }
                 }
