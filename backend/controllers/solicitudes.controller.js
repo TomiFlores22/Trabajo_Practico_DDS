@@ -1,7 +1,31 @@
+import historialService from "../services/historial.service.js";
 import solicitudesService from "../services/solicitudes.service.js";
 
 class SolicitudesController {
 
+    async obtenerHistorial(req, res) {
+    try {
+        const { id } = req.params;
+        await solicitudesService.obtenerPorId(
+            id,
+            req.usuario
+        );
+        const historial =
+            await historialService.obtenerPorSolicitud(id);
+        res.json(historial);
+    } catch (error) {
+        const statusCode =
+            error.message
+                .toLowerCase()
+                .includes("denegado")
+                    ? 403
+                    : 500;
+        res.status(statusCode).json({
+            error: error.message
+        });
+    }
+}
+    
     async crear(req, res) {
         try {
 

@@ -4,7 +4,7 @@ import express from "express";
 import authRoutes from "./routes/auth.routes.js";
 import equiposRoutes from "./routes/equipos.routes.js";
 import solicitudesRoutes from "./routes/solicitudes.routes.js";
-import historialRoutes from "./routes/historial.routes.js";
+
 
 import { errorHandler } from "./middlewares/error.middleware.js";
 
@@ -18,7 +18,7 @@ app.use(express.json());
 app.use("/api/auth", authRoutes);
 app.use("/api/equipos", equiposRoutes);
 app.use("/api/solicitudes", solicitudesRoutes);
-app.use("/api/historial", historialRoutes);
+
 
 
 
