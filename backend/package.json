@@ -13,8 +13,7 @@
   "type": "module",
   "jest": {
     "testEnvironment": "node",
-    "transform": {},
-    "extensionsToTreatAsEsm": [".js"]
+    "transform": {}
   },
   "dependencies": {
     "bcryptjs": "^3.0.3",
