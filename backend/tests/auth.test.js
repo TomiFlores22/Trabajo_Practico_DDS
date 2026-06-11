@@ -9,8 +9,8 @@ describe('🧪 Tests de Integración - Autenticación y Permisos', () => {
     beforeAll(async () => {
         await sequelize.sync({ force: true });
         
-        const salt = await bcrypt.genSalt(10);
-        const passwordHash = await bcrypt.hash('clave123', salt);
+        const salt = await bcryptjs.genSalt(10);
+        const passwordHash = await bcryptjs.hash('clave123', salt);
         
         await Usuario.create({
             nombre: 'Juan Perez',
