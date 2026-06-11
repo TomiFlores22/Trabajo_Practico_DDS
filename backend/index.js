@@ -31,16 +31,19 @@ app.use(errorHandler);
 
 const PORT = 3000;
 
-sequelize.sync()
-  .then(() => {
-    console.log("Base de datos sincronizada");
+if (process.env.NODE_ENV !== 'test') {
+  sequelize.sync()
+    .then(() => {
+      console.log("Base de datos sincronizada");
 
-    app.listen(PORT, () => {
-      console.log(`Servidor escuchando en puerto ${PORT}`);
+      app.listen(PORT, () => {
+        console.log(`Servidor escuchando en puerto ${PORT}`);
+      });
+    })
+    .catch((err) => {
+      console.error("Error al sincronizar la BD:", err);
     });
-  })
-  .catch((err) => {
-    console.error("Error al sincronizar la BD:", err);
-  });
+}
+
 
 export default app;

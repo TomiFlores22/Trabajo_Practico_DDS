@@ -4,7 +4,6 @@ import sequelize from '../config/db.js';
 import Solicitud from '../models/solicitud.model.js';
 import jwt from 'jsonwebtoken';
 import Usuario from '../models/usuario.model.js';
-import { DESCRIBE } from 'sequelize/lib/query-types';
 
 const JWT_SECRET = process.env.JWT_SECRET || "mi-secreto";
 

@@ -2,7 +2,7 @@ import request from 'supertest';
 import app from '../index.js';
 import sequelize from '../config/db.js';
 import Usuario from '../models/usuario.model.js';
-import bcrypt from 'bcrypt'; 
+import bcryptjs from 'bcryptjs'; 
 
 describe('🧪 Tests de Integración - Autenticación y Permisos', () => {
     
