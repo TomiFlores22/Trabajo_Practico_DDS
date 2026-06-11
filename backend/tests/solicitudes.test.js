@@ -8,7 +8,7 @@ import Usuario from '../models/usuario.model.js';
 const JWT_SECRET = process.env.JWT_SECRET || "mi-secreto";
 
 describe('Test de integración - Módulo de solicitudes', () => {
-    let tokenUsuario, tokenAdmin, usuarioComun, usuarioAdmin;
+    let tokenUsuario, tokenAdmin, usuarioComun, usuarioAdmin, equipo;
 
     beforeAll(async () => {
         await sequelize.sync({ force: true});
@@ -27,6 +27,15 @@ describe('Test de integración - Módulo de solicitudes', () => {
             rol: 'Admin'
         });
 
+        equipo = await Equipo.create({
+            codigoInventario: 'EQUIPO-001',
+            nombre: 'Laptop',
+            categoria: 'Computadora',
+            estado: 'Disponible',
+            ubicacion: 'Lab A',
+            requiereAutorizacion: true
+        });
+
         tokenUsuario = jwt.sign({ id: usuarioComun.id, correo: usuarioComun.correo, rol: usuarioComun.rol }, JWT_SECRET);
         tokenAdmin = jwt.sign({ id: usuarioAdmin.id, correo: usuarioAdmin.correo, rol: usuarioAdmin.rol }, JWT_SECRET);
     });
@@ -38,6 +47,7 @@ describe('Test de integración - Módulo de solicitudes', () => {
     describe('POST /api/solicitudes - Creación', () => {
         it('Deberia crear una solicitud en estado Pendiente', async() => {
             const nuevaSolicitud = {
+                equipoId: equipo.id,
                 fechaRetiro: "2026-09-10",
                 fechaDevolucion: "2026-09-15",
                 motivo: 'Prueba automatizada'
@@ -56,6 +66,7 @@ describe('Test de integración - Módulo de solicitudes', () => {
 
         it('Debería saltar el error 400 por fechas solapadas', async () => {
             const solicitudVieja = {
+                equipoId: equipo.id,
                 fechaRetiro: '2023-01-01',
                 fechaDevolucion: '2023-01-05',
                 motivo: 'Debería fallar'
@@ -72,6 +83,7 @@ describe('Test de integración - Módulo de solicitudes', () => {
 
         it('Deberia salir error 400 por motivo vacío', async () => {
             const solicitudSinMotivo = {
+                equipoId: equipo.id,
                 fechaRetiro: '2026-10-01',
                 fechaDevolucion: '2026-10-05',
                 motivo: ''
@@ -92,6 +104,7 @@ describe('Test de integración - Módulo de solicitudes', () => {
 
         beforeEach(async () => {
             const sol = await Solicitud.create({
+                equipoId: equipo.id,
                 usuarioId: usuarioComun.id,
                 fechaRetiro: "2026-12-01",
                 fechaDevolucion: "2026-12-05",
@@ -108,7 +121,7 @@ describe('Test de integración - Módulo de solicitudes', () => {
                 .send({ estado: 'Aprobada' });
 
             expect(res.statusCode).toBe(403);
-            expect(res.body.error).toLowerCase().toContain('acceso denegado');
+            expect(res.body.error.toLowerCase()).toContain('acceso denegado');
         });
 
         it('Debería permitir al Administrador aprobar la solicitud con 200', async () => {

@@ -46,7 +46,7 @@ describe('🧪 Tests de Integración - Autenticación y Permisos', () => {
             });
 
         expect(res.statusCode).toBe(401);
-        expect(res.body.error).toLowerCase().toContain('inválid');
+        expect(res.body.error.toLowerCase()).toContain('inválid');
     });
 
     it('❌ GET /api/solicitudes - Debería rebotar con 401 si no se envía el token', async () => {
