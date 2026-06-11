@@ -41,7 +41,7 @@ describe('🧪 Tests de Integración - Autenticación y Permisos', () => {
         const res = await request(app)
             .post('/api/auth/login')
             .send({
-                email: 'juan@dds.com',
+                correo: 'juan@dds.com',
                 password: 'password_erronea'
             });
 

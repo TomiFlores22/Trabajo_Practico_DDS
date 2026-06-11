@@ -16,14 +16,14 @@ describe('Test de integración - Módulo de solicitudes', () => {
         usuarioComun = await Usuario.create({
             nombre: 'Test Alumno',
             correo: 'alumno.test@utn.com',
-            password: 'contra-secreta',
+            passwordHash: 'contra-secreta',
             rol: 'usuario'
         });
 
         usuarioAdmin = await Usuario.create({
             nombre: 'Test Admin',
             correo: 'admin.test@utn.com',
-            password: 'contra-secreta',
+            passwordHash: 'contra-secreta',
             rol: 'Admin'
         });
 
