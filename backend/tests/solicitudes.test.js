@@ -8,7 +8,7 @@ import { DESCRIBE } from 'sequelize/lib/query-types';
 
 const JWT_SECRET = process.env.JWT_SECRET || "mi-secreto";
 
-DESCRIBE('Test de integración - Módulo de solicitudes', () => {
+describe('Test de integración - Módulo de solicitudes', () => {
     let tokenUsuario, tokenAdmin, usuarioComun, usuarioAdmin;
 
     beforeAll(async () => {
@@ -36,7 +36,7 @@ DESCRIBE('Test de integración - Módulo de solicitudes', () => {
         await sequelize.close();
     });
 
-    DESCRIBE('POST /api/solicitudes - Creación', () => {
+    describe('POST /api/solicitudes - Creación', () => {
         it('Deberia crear una solicitud en estado Pendiente', async() => {
             const nuevaSolicitud = {
                 fechaRetiro: "2026-09-10",
@@ -46,12 +46,12 @@ DESCRIBE('Test de integración - Módulo de solicitudes', () => {
 
             const res = await request(app)
                 .post('/api/solicitudes')
-                .set('Autorización', `Bearer ${tokenUsuario}`)
+                .set('Authorization', `Bearer ${tokenUsuario}`)
                 .send(nuevaSolicitud);
 
             expect(res.statusCode).toBe(201);
             expect(res.body).toHaveProperty('id');
-            xpect(res.body.estado).toBe('Pendiente');
+            expect(res.body.estado).toBe('Pendiente');
             expect(res.body.usuarioId).toBe(usuarioComun.id);
         });
 
@@ -81,7 +81,7 @@ DESCRIBE('Test de integración - Módulo de solicitudes', () => {
             const res = await request(app)
                 .post('/api/solicitudes')
                 .set('Authorization', `Bearer ${tokenUsuario}`)
-                .send(solicitonSinMotivo);
+                .send(solicitudSinMotivo);
 
             expect(res.statusCode).toBe(400);
             expect(res.body.error).toContain('Debe ingresar un motivo');

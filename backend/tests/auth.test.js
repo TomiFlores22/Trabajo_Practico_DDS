@@ -14,8 +14,8 @@ describe('🧪 Tests de Integración - Autenticación y Permisos', () => {
         
         await Usuario.create({
             nombre: 'Juan Perez',
-            email: 'juan@dds.com',
-            password: passwordHash,
+            correo: 'juan@dds.com',
+            passwordHash: passwordHash,
             rol: 'Usuario',
             activo: true
         });
@@ -29,7 +29,7 @@ describe('🧪 Tests de Integración - Autenticación y Permisos', () => {
         const res = await request(app)
             .post('/api/auth/login')
             .send({
-                email: 'juan@dds.com',
+                correo: 'juan@dds.com',
                 password: 'clave123'
             });
 
