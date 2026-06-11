@@ -1,0 +1,126 @@
+import request from 'supertest';
+import app from '../index.js';
+import sequelize from '../config/db.js';
+import Solicitud from '../models/solicitud.model.js';
+import jwt from 'jsonwebtoken';
+import Usuario from '../models/usuario.model.js';
+import { DESCRIBE } from 'sequelize/lib/query-types';
+
+const JWT_SECRET = process.env.JWT_SECRET || "mi-secreto";
+
+DESCRIBE('Test de integración - Módulo de solicitudes', () => {
+    let tokenUsuario, tokenAdmin, usuarioComun, usuarioAdmin;
+
+    beforeAll(async () => {
+        await sequelize.sync({ force: true});
+
+        usuarioComun = await Usuario.create({
+            nombre: 'Test Alumno',
+            correo: 'alumno.test@utn.com',
+            password: 'contra-secreta',
+            rol: 'usuario'
+        });
+
+        usuarioAdmin = await Usuario.create({
+            nombre: 'Test Admin',
+            correo: 'admin.test@utn.com',
+            password: 'contra-secreta',
+            rol: 'Admin'
+        });
+
+        tokenUsuario = jwt.sign({ id: usuarioComun.id, correo: usuarioComun.correo, rol: usuarioComun.rol }, JWT_SECRET);
+        tokenAdmin = jwt.sign({ id: usuarioAdmin.id, correo: usuarioAdmin.correo, rol: usuarioAdmin.rol }, JWT_SECRET);
+    });
+
+    afterAll(async () => {
+        await sequelize.close();
+    });
+
+    DESCRIBE('POST /api/solicitudes - Creación', () => {
+        it('Deberia crear una solicitud en estado Pendiente', async() => {
+            const nuevaSolicitud = {
+                fechaRetiro: "2026-09-10",
+                fechaDevolucion: "2026-09-15",
+                motivo: 'Prueba automatizada'
+            };
+
+            const res = await request(app)
+                .post('/api/solicitudes')
+                .set('Autorización', `Bearer ${tokenUsuario}`)
+                .send(nuevaSolicitud);
+
+            expect(res.statusCode).toBe(201);
+            expect(res.body).toHaveProperty('id');
+            xpect(res.body.estado).toBe('Pendiente');
+            expect(res.body.usuarioId).toBe(usuarioComun.id);
+        });
+
+        it('Debería saltar el error 400 por fechas solapadas', async () => {
+            const solicitudVieja = {
+                fechaRetiro: '2023-01-01',
+                fechaDevolucion: '2023-01-05',
+                motivo: 'Debería fallar'
+            };
+
+            const res = await request(app)
+                .post('/api/solicitudes')
+                .set('Authorization', `Bearer ${tokenUsuario}`)
+                .send(solicitudVieja);
+
+            expect(res.statusCode).toBe(400);
+            expect(res.body.error).toContain('La fecha de retiro no puede ser anterior a la fecha actual');
+        });
+
+        it('Deberia salir error 400 por motivo vacío', async () => {
+            const solicitudSinMotivo = {
+                fechaRetiro: '2026-10-01',
+                fechaDevolucion: '2026-10-05',
+                motivo: ''
+            };
+
+            const res = await request(app)
+                .post('/api/solicitudes')
+                .set('Authorization', `Bearer ${tokenUsuario}`)
+                .send(solicitonSinMotivo);
+
+            expect(res.statusCode).toBe(400);
+            expect(res.body.error).toContain('Debe ingresar un motivo');
+        });
+    });
+
+    describe('PUT /api/solicitudes/:id - Transiciones y Roles', () => {
+        let solicitudId;
+
+        beforeEach(async () => {
+            const sol = await Solicitud.create({
+                usuarioId: usuarioComun.id,
+                fechaRetiro: "2026-12-01",
+                fechaDevolucion: "2026-12-05",
+                motivo: 'Solicitud para mutar estado',
+                estado: 'Pendiente'
+            });
+            solicitudId = sol.id;
+        });
+
+        it('Error 400 por Usuario que intenta aprobar', async () => {
+            const res = await request(app)
+                .put(`/api/solicitudes/${solicitudId}`)
+                .set('Authorization', `Bearer ${tokenUsuario}`)
+                .send({ estado: 'Aprobada' });
+
+            expect(res.statusCode).toBe(403);
+            expect(res.body.error).toLowerCase().toContain('acceso denegado');
+        });
+
+        it('Debería permitir al Administrador aprobar la solicitud con 200', async () => {
+            const res = await request(app)
+                .put(`/api/solicitudes/${solicitudId}`)
+                .set('Authorization', `Bearer ${tokenAdmin}`) 
+                .send({ estado: 'Aprobada' });
+
+            expect(res.statusCode).toBe(200);
+            expect(res.body.estado).toBe('Aprobada');
+            expect(res.body.autorizadoPor).toBe(usuarioAdmin.id);
+        });
+    });
+})
