@@ -53,7 +53,7 @@ class SolicitudesService {
 
 
     async obtenerTodas(query, usuarioLogueado) {
-        const { estado, equipoID, desde, hasta, page = 1, limit = 5, sortBy = 'fechaRetiro', order = 'ASC' } = query;
+        const { estado, equipoID, categoria, desde, hasta, page = 1, limit = 5, sortBy = 'fechaRetiro', order = 'ASC' } = query;
 
         const filtros = {};
         if (usuarioLogueado.rol !== 'admin') {
@@ -80,7 +80,13 @@ class SolicitudesService {
             offset: offsetNumero,
             order: [[sortBy, order]],
             include: [
-                { model: Equipo, attributes: ['nombre', 'codigoInventario', 'categoria'] }
+                {
+                    model: Equipo,
+                    attributes: ['nombre', 'codigoInventario', 'categoria'],
+                    ...(categoria && {
+                        where: { categoria }
+                    })
+                }
             ]
         });
 
@@ -113,7 +119,7 @@ class SolicitudesService {
         const estadoAnterior = solicitud.estado;
         const nuevoEstado = datos.estado;
 
-        
+
 
         if (nuevoEstado && nuevoEstado !== estadoAnterior) {
             if (nuevoEstado && nuevoEstado !== estadoAnterior) {
@@ -186,6 +192,56 @@ class SolicitudesService {
                 nuevoEstado: solicitud.estado
             };
         }
+
+    }
+
+
+    async obtenerResumen() {
+
+        const solicitudesPendientes =
+            await Solicitud.count({
+                where: { estado: "Pendiente" }
+            });
+
+        const equiposPrestados =
+            await Equipo.count({
+                where: { estado: "Prestado" }
+            });
+
+        const hoy = new Date().toISOString().split("T")[0];
+
+        const prestamosVencidos =
+            await Solicitud.count({
+                where: {
+                    estado: "Aprobada",
+                    fechaDevolucion: {
+                        [Op.lt]: hoy
+                    }
+                }
+            });
+
+        const equiposDisponibles =
+            await Equipo.findAll({
+                where: {
+                    estado: "Disponible"
+                }
+            });
+
+        const equiposDisponiblesPorCategoria = {};
+
+        equiposDisponibles.forEach((equipo) => {
+            const categoria = equipo.categoria;
+
+            equiposDisponiblesPorCategoria[categoria] =
+                (equiposDisponiblesPorCategoria[categoria] || 0) + 1;
+        });
+
+        return {
+            equiposDisponiblesPorCategoria,
+            solicitudesPendientes,
+            equiposPrestados,
+            prestamosVencidos
+        };
     }
 }
 
