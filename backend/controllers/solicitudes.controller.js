@@ -3,7 +3,7 @@ import solicitudesService from "../services/solicitudes.service.js";
 
 class SolicitudesController {
 
-    async obtenerHistorial(req, res) {
+    async obtenerHistorial(req, res, next) {
         try {
             const { id } = req.params;
             await solicitudesService.obtenerPorId(
@@ -14,49 +14,40 @@ class SolicitudesController {
                 await historialService.obtenerPorSolicitud(id);
             res.json(historial);
         } catch (error) {
-            const statusCode =
-                error.message
-                    .toLowerCase()
-                    .includes("denegado")
-                    ? 403
-                    : 500;
-            res.status(statusCode).json({
-                error: error.message
-            });
+            next(error) ;
         }
     }
 
-    async crear(req, res) {
+    async crear(req, res, next) {
         try {
 
             const datosSolicitud = { ...req.body, usuarioId: req.usuario.id };
             const nuevaSolicitud = await solicitudesService.crear(datosSolicitud);
             res.status(201).json(nuevaSolicitud);
         } catch (error) {
-            res.status(400).json({ error: error.message });
+            next(error);
         }
     }
 
-    async obtenerTodas(req, res) {
+    async obtenerTodas(req, res, next) {
         try {
             const resultado = await solicitudesService.obtenerTodas(req.query, req.usuario);
             res.json(resultado);
         } catch (error) {
-            res.status(500).json({ error: error.message });
+            next(error);
         }
     }
 
-    async obtenerPorId(req, res) {
+    async obtenerPorId(req, res, next) {
         try {
             const solicitud = await solicitudesService.obtenerPorId(req.params.id, req.usuario);
             res.json(solicitud);
         } catch (error) {
-            const statusCode = error.message.includes("denegado") ? 403 : 404;
-            res.status(statusCode).json({ error: error.message });
+            next(error);
         }
     }
 
-    async actualizar(req, res) {
+    async actualizar(req, res, next) {
         try {
             const id = req.params.id;
             const usuarioModificador = req.usuario;
@@ -66,12 +57,12 @@ class SolicitudesController {
 
             res.json(resultado.solicitud);
         } catch (error) {
-            res.status(400).json({ error: error.message });
+            next(error);
         }
     }
 
 
-    async aprobar(req, res) {
+    async aprobar(req, res, next) {
         try {
             const resultado = await solicitudesService.actualizar(
                 req.params.id,
@@ -80,12 +71,13 @@ class SolicitudesController {
             );
 
             res.json(resultado.solicitud);
+
         } catch (error) {
-            res.status(400).json({ error: error.message });
+            next(error);
         }
     }
 
-    async rechazar(req, res) {
+    async rechazar(req, res, next) {
         try {
             const resultado = await solicitudesService.actualizar(
                 req.params.id,
@@ -95,11 +87,11 @@ class SolicitudesController {
 
             res.json(resultado.solicitud);
         } catch (error) {
-            res.status(400).json({ error: error.message });
+            next(error);
         }
     }
 
-    async cancelar(req, res) {
+    async cancelar(req, res, next) {
         try {
             const resultado = await solicitudesService.actualizar(
                 req.params.id,
@@ -109,11 +101,11 @@ class SolicitudesController {
 
             res.json(resultado.solicitud);
         } catch (error) {
-            res.status(400).json({ error: error.message });
+            next(error);
         }
     }
 
-    async devolver(req, res) {
+    async devolver(req, res, next) {
         try {
             const resultado = await solicitudesService.actualizar(
                 req.params.id,
@@ -123,12 +115,12 @@ class SolicitudesController {
 
             res.json(resultado.solicitud);
         } catch (error) {
-            res.status(400).json({ error: error.message });
+            next(error);
         }
     }
 
 
-    async obtenerResumen(req, res) {
+    async obtenerResumen(req, res, next) {
         try {
 
             const resumen =
@@ -137,15 +129,13 @@ class SolicitudesController {
             res.json(resumen);
 
         } catch (error) {
-
-            res.status(500).json({
-                error: error.message
-            });
-
+            next(error);
         }
     }
 
 }
+
+          
 
 export default new SolicitudesController();
 

@@ -2,6 +2,7 @@ import Solicitud from '../models/solicitud.model.js';
 import Equipo from '../models/equipo.model.js';
 import historialService from './historial.service.js';
 import { Op } from 'sequelize';
+import AppError from "../utils/AppError.js";
 
 class SolicitudesService {
 
@@ -10,22 +11,31 @@ class SolicitudesService {
         const { equipoId, usuarioId, fechaRetiro, fechaDevolucion, motivo } = datos;
 
         if (!motivo || !motivo.trim()) {
-            throw new Error('Debe ingresar un motivo para la solicitud.');
+    throw new AppError(
+        'Debe ingresar un motivo para la solicitud.',
+        400
+    );
         }
 
         const hoy = new Date();
         hoy.setHours(0, 0, 0, 0);
         if (new Date(fechaRetiro) < hoy) {
-            throw new Error('La fecha de retiro no puede ser anterior a la fecha actual.');
+            throw new AppError(
+                'La fecha de retiro no puede ser anterior a la fecha actual.',
+                400
+            );
         }
 
         if (new Date(fechaRetiro) >= new Date(fechaDevolucion)) {
-            throw new Error('La fecha de retiro debe ser anterior a la fecha de devolución.');
+            throw new AppError(
+                'La fecha de retiro debe ser anterior a la fecha de devolución.',
+                400
+            );
         }
 
         const equipo = await Equipo.findByPk(equipoId);
-        if (!equipo) throw new Error('Equipo no encontrado.');
-        if (equipo.estado === 'Baja') throw new Error('No se pueden realizar solicitudes sobre un equipo dado de baja.');
+        if (!equipo) throw new AppError('Equipo no encontrado.', 404);
+        if (equipo.estado === 'Baja') throw new AppError('No se pueden realizar solicitudes sobre un equipo dado de baja.', 400);
 
         const solicitudSuperpuesta = await Solicitud.findOne({
             where: {
@@ -36,7 +46,7 @@ class SolicitudesService {
             }
         });
         if (solicitudSuperpuesta) {
-            throw new Error('Ya existe una solicitud aprobada para este equipo en el rango de fechas especificado.');
+            throw new AppError('Ya existe una solicitud aprobada para este equipo en el rango de fechas especificado.', 400);
         }
         const nuevaSolicitud = await Solicitud.create({
             equipoId,
@@ -104,10 +114,19 @@ class SolicitudesService {
             include: [{ model: Equipo }]
         });
         if (!solicitud) {
-            throw new Error('Solicitud no encontrada.');
+            throw new AppError(
+                'Solicitud no encontrada.',
+                404
+            );
         }
-        if (usuarioLogueado.rol !== 'admin' && solicitud.usuarioId !== usuarioLogueado.id) {
-            throw new Error('Acceso denegado: No tienes permisos para visualizar esta solicitud.');
+        if (
+            usuarioLogueado.rol !== 'admin' &&
+            solicitud.usuarioId !== usuarioLogueado.id
+        ) {
+            throw new AppError(
+                'Acceso denegado: No tienes permisos para visualizar esta solicitud.',
+                403
+            );
         }
         return solicitud;
     }
@@ -119,6 +138,26 @@ class SolicitudesService {
         const estadoAnterior = solicitud.estado;
         const nuevoEstado = datos.estado;
 
+        if (!datos.estado) {
+
+            if (solicitud.estado !== "Pendiente") {
+                throw new AppError(
+                    "Solo se pueden editar solicitudes pendientes.",
+                    400
+                );
+            }
+
+            await solicitud.update({
+                fechaRetiro: datos.fechaRetiro ?? solicitud.fechaRetiro,
+                fechaDevolucion: datos.fechaDevolucion ?? solicitud.fechaDevolucion,
+                motivo: datos.motivo ?? solicitud.motivo
+            });
+
+            return {
+                solicitud
+            };
+        }
+
 
 
         if (nuevoEstado && nuevoEstado !== estadoAnterior) {
@@ -126,28 +165,32 @@ class SolicitudesService {
 
                 if (estadoAnterior === 'Pendiente') {
                     if (!['Aprobada', 'Rechazada', 'Cancelada'].includes(nuevoEstado)) {
-                        throw new Error(`Transición inválida: No se puede cambiar de ${estadoAnterior} a ${nuevoEstado}.`);
+                        throw new AppError(`Transición inválida: No se puede cambiar de ${estadoAnterior} a ${nuevoEstado}.`, 400);
                     }
                 }
                 else if (estadoAnterior === 'Aprobada') {
                     if (nuevoEstado !== 'Devuelta') {
-                        throw new Error(`Transición inválida: Una solicitud Aprobada solo puede pasar a Devuelta.`);
+                        throw new AppError(`Transición inválida: Una solicitud Aprobada solo puede pasar a Devuelta.`, 400);
                     }
                 }
                 else if (['Rechazada', 'Cancelada', 'Devuelta'].includes(estadoAnterior)) {
-                    throw new Error(`Acción denegada: La solicitud ya se encuentra en un estado final (${estadoAnterior}) y no puede reabrirse.`);
+                    throw new AppError(`Acción denegada: La solicitud ya se encuentra en un estado final (${estadoAnterior}) y no puede reabrirse.`, 400);
                 }
 
                 if (['Aprobada', 'Rechazada'].includes(nuevoEstado)) {
                     if (usuarioModificador.rol !== 'admin') {
-                        throw new Error('Acceso denegado: Solo los administradores pueden Aprobar o Rechazar solicitudes.');
+                        throw new AppError(
+                            'Solo los administradores pueden Aprobar o Rechazar solicitudes.',
+                            403
+                        );
                     }
+
                     solicitud.autorizadoPor = usuarioModificador.id;
                 }
 
                 if (nuevoEstado === 'Cancelada') {
                     if (usuarioModificador.rol !== 'admin' && solicitud.usuarioId !== usuarioModificador.id) {
-                        throw new Error('Acceso denegado: No puedes cancelar una solicitud que no te pertenece.');
+                        throw new AppError('Acceso denegado: No puedes cancelar una solicitud que no te pertenece.', 403);
                     }
                 }
 
@@ -163,7 +206,7 @@ class SolicitudesService {
                     });
 
                     if (conflictoTemporal) {
-                        throw new Error('Conflicto de fechas: El equipo ya fue asignado a otra solicitud aprobada en ese intervalo temporal.');
+                        throw new AppError('Conflicto de fechas: El equipo ya fue asignado a otra solicitud aprobada en ese intervalo temporal.', 400);
                     }
 
                     await solicitud.Equipo.update({ estado: 'Prestado' });
