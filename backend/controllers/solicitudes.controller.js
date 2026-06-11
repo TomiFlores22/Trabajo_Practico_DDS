@@ -4,28 +4,28 @@ import solicitudesService from "../services/solicitudes.service.js";
 class SolicitudesController {
 
     async obtenerHistorial(req, res) {
-    try {
-        const { id } = req.params;
-        await solicitudesService.obtenerPorId(
-            id,
-            req.usuario
-        );
-        const historial =
-            await historialService.obtenerPorSolicitud(id);
-        res.json(historial);
-    } catch (error) {
-        const statusCode =
-            error.message
-                .toLowerCase()
-                .includes("denegado")
+        try {
+            const { id } = req.params;
+            await solicitudesService.obtenerPorId(
+                id,
+                req.usuario
+            );
+            const historial =
+                await historialService.obtenerPorSolicitud(id);
+            res.json(historial);
+        } catch (error) {
+            const statusCode =
+                error.message
+                    .toLowerCase()
+                    .includes("denegado")
                     ? 403
                     : 500;
-        res.status(statusCode).json({
-            error: error.message
-        });
+            res.status(statusCode).json({
+                error: error.message
+            });
+        }
     }
-}
-    
+
     async crear(req, res) {
         try {
 
@@ -52,21 +52,96 @@ class SolicitudesController {
             res.json(solicitud);
         } catch (error) {
             const statusCode = error.message.includes("denegado") ? 403 : 404;
-            res.status(statusCode).json({ error: error.message});
+            res.status(statusCode).json({ error: error.message });
         }
     }
 
     async actualizar(req, res) {
-        try{
+        try {
             const id = req.params.id;
             const usuarioModificador = req.usuario;
 
             const resultado = await solicitudesService.actualizar(id, req.body, usuarioModificador);;
-           
+
 
             res.json(resultado.solicitud);
         } catch (error) {
             res.status(400).json({ error: error.message });
+        }
+    }
+
+
+    async aprobar(req, res) {
+        try {
+            const resultado = await solicitudesService.actualizar(
+                req.params.id,
+                { estado: "Aprobada" },
+                req.usuario
+            );
+
+            res.json(resultado.solicitud);
+        } catch (error) {
+            res.status(400).json({ error: error.message });
+        }
+    }
+
+    async rechazar(req, res) {
+        try {
+            const resultado = await solicitudesService.actualizar(
+                req.params.id,
+                { estado: "Rechazada" },
+                req.usuario
+            );
+
+            res.json(resultado.solicitud);
+        } catch (error) {
+            res.status(400).json({ error: error.message });
+        }
+    }
+
+    async cancelar(req, res) {
+        try {
+            const resultado = await solicitudesService.actualizar(
+                req.params.id,
+                { estado: "Cancelada" },
+                req.usuario
+            );
+
+            res.json(resultado.solicitud);
+        } catch (error) {
+            res.status(400).json({ error: error.message });
+        }
+    }
+
+    async devolver(req, res) {
+        try {
+            const resultado = await solicitudesService.actualizar(
+                req.params.id,
+                { estado: "Devuelta" },
+                req.usuario
+            );
+
+            res.json(resultado.solicitud);
+        } catch (error) {
+            res.status(400).json({ error: error.message });
+        }
+    }
+
+
+    async obtenerResumen(req, res) {
+        try {
+
+            const resumen =
+                await solicitudesService.obtenerResumen();
+
+            res.json(resumen);
+
+        } catch (error) {
+
+            res.status(500).json({
+                error: error.message
+            });
+
         }
     }
 
