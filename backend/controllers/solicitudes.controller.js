@@ -27,7 +27,7 @@ class SolicitudesController {
             const solicitud = await solicitudesService.obtenerPorId(req.params.id, req.usuario);
             res.json(solicitud);
         } catch (error) {
-            const statusCode = error.message.includes("Denegado") ? 403 : 404;
+            const statusCode = error.message.includes("denegado") ? 403 : 404;
             res.status(statusCode).json({ error: error.message});
         }
     }
@@ -38,6 +38,7 @@ class SolicitudesController {
             const usuarioModificador = req.usuario;
 
             const resultado = await solicitudesService.actualizar(id, req.body, usuarioModificador);;
+           
 
             res.json(resultado.solicitud);
         } catch (error) {
