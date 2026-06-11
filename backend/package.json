@@ -14,8 +14,7 @@
   "jest": {
     "testEnvironment": "node",
     "transform": {},
-    "extensionsToTreatAsEsm": [".js"],
-    "testMatch": ["**/tests/**/*.test.js"]
+    "extensionsToTreatAsEsm": [".js"]
   },
   "dependencies": {
     "bcryptjs": "^3.0.3",
