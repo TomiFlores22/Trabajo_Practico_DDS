@@ -15,7 +15,7 @@ class SolicitudesController {
 
     async obtenerTodas(req, res) {
         try {
-            const resultado = await solicitudesService.obtenerTodas(req.query);
+            const resultado = await solicitudesService.obtenerTodas(req.query, req.usuario);
             res.json(resultado);
         } catch (error) {
             res.status(500).json({ error: error.message });
@@ -24,10 +24,11 @@ class SolicitudesController {
 
     async obtenerPorId(req, res) {
         try {
-            const solicitud = await solicitudesService.obtenerPorId(req.params.id);
+            const solicitud = await solicitudesService.obtenerPorId(req.params.id, req.usuario);
             res.json(solicitud);
         } catch (error) {
-            res.status(404).json({ error: error.message });
+            const statusCode = error.message.includes("Denegado") ? 403 : 404;
+            res.status(statusCode).json({ error: error.message});
         }
     }
 
@@ -36,10 +37,7 @@ class SolicitudesController {
             const id = req.params.id;
             const usuarioModificador = req.usuario;
 
-            const resultado = await solicitudesService.actualizar(id, req.body, usuarioModificador);
-
-            // 💡 NOTA PARA LAUTI: Acá abajo él va a meter su línea del historial:
-            // await historialService.registrarCambio(id, usuarioModificador.id, "Modificación", { estado: resultado.estadoAnterior }, { estado: resultado.nuevoEstado });
+            const resultado = await solicitudesService.actualizar(id, req.body, usuarioModificador);;
 
             res.json(resultado.solicitud);
         } catch (error) {

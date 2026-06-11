@@ -2,6 +2,8 @@ import bcrypt from "bcryptjs";
 import Usuario from "../models/usuario.model.js";
 import jwt from "jsonwebtoken";
 
+const JWT_SECRET = process.env.JWT_SECRET || "mi-secreto";
+
 export const register = async (req, res) => {
     try {
         const { nombre, correo, password, rol } = req.body;
@@ -22,12 +24,17 @@ export const register = async (req, res) => {
             nombre,
             correo,
             passwordHash: hash,
-            rol
+            rol: rol || "Usuario"
         });
 
         res.status(201).json({
             mensaje: "Usuario creado correctamente",
-            usuario
+            usuario: {
+                id: usuario.id,
+                nombre: usuario.nombre,
+                correo: usuario.correo,
+                rol: usuario.rol
+            }
         });
 
     } catch (error) {
@@ -68,7 +75,7 @@ export const login = async (req, res) => {
                 correo: usuario.correo,
                 rol: usuario.rol
             },
-            "mi-secreto",
+            JWT_SECRET,
             {
                 expiresIn: "1h"
             }
@@ -76,7 +83,11 @@ export const login = async (req, res) => {
 
         res.json({
             mensaje: "Login exitoso",
-            token
+            token,
+            usuario: {
+                nombre: usuario.nombre,
+                rol: usuario.rol
+            }
         });
 
     } catch (error) {
