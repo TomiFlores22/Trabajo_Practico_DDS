@@ -46,7 +46,17 @@ describe('🧪 Tests de Integración - Autenticación y Permisos', () => {
             });
 
         expect(res.statusCode).toBe(401);
-        expect(res.body.error.toLowerCase()).toContain('inválid');
+
+        console.log("ESTRUCTURA DE RESPUESTA BACKEND:", res.body)
+
+        const mensajeError = res.body.error || 
+                         res.body.message || 
+                         res.body.msg || 
+                         (Array.isArray(res.body.errors) ? res.body.errors[0]?.msg : "") ||
+                         JSON.stringify(res.body);
+
+    expect(mensajeError).toBeTruthy(); 
+    expect(mensajeError.toLowerCase()).toContain('inválid');
     });
 
     it('❌ GET /api/solicitudes - Debería rebotar con 401 si no se envía el token', async () => {

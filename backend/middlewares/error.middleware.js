@@ -5,7 +5,7 @@ export const errorHandler = (err, req, res, next) => {
     res.status(
         err.status || 500
     ).json({
-        mensaje:
+        error:
             err.message ||
             "Error interno del servidor"
     });

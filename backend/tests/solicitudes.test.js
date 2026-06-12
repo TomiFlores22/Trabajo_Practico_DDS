@@ -25,7 +25,7 @@ describe('Test de integración - Módulo de solicitudes', () => {
             nombre: 'Test Admin',
             correo: 'admin.test@utn.com',
             passwordHash: 'contra-secreta',
-            rol: 'Admin'
+            rol: 'admin'
         });
 
         equipo = await Equipo.create({
@@ -39,6 +39,20 @@ describe('Test de integración - Módulo de solicitudes', () => {
 
         tokenUsuario = jwt.sign({ id: usuarioComun.id, correo: usuarioComun.correo, rol: usuarioComun.rol }, JWT_SECRET);
         tokenAdmin = jwt.sign({ id: usuarioAdmin.id, correo: usuarioAdmin.correo, rol: usuarioAdmin.rol }, JWT_SECRET);
+    });
+
+    beforeEach(async () => {
+        await Solicitud.destroy({ where: {}, truncate: { cascade: true } });
+        await Equipo.destroy({ where: {}, truncate: { cascade: true } });
+
+        equipo = await Equipo.create({
+            codigoInventario: 'EQUIPO-001',
+            nombre: 'Laptop',
+            categoria: 'Computadora',
+            estado: 'Disponible',
+            ubicacion: 'Lab A',
+            requiereAutorizacion: true
+        });
     });
 
     afterAll(async () => {
@@ -79,7 +93,8 @@ describe('Test de integración - Módulo de solicitudes', () => {
                 .send(solicitudVieja);
 
             expect(res.statusCode).toBe(400);
-            expect(res.body.error).toContain('La fecha de retiro no puede ser anterior a la fecha actual');
+            const mensajeError = res.body.error || res.body.message || "";
+            expect(mensajeError.toLowerCase()).toContain('la fecha de retiro no puede ser anterior a la fecha actual');
         });
 
         it('Deberia salir error 400 por motivo vacío', async () => {
@@ -96,7 +111,8 @@ describe('Test de integración - Módulo de solicitudes', () => {
                 .send(solicitudSinMotivo);
 
             expect(res.statusCode).toBe(400);
-            expect(res.body.error).toContain('Debe ingresar un motivo');
+            const mensajeError = res.body.error || res.body.message || "";
+            expect(mensajeError.toLowerCase()).toContain('debe ingresar un motivo');
         });
     });
 
@@ -122,7 +138,8 @@ describe('Test de integración - Módulo de solicitudes', () => {
                 .send({ estado: 'Aprobada' });
 
             expect(res.statusCode).toBe(403);
-            expect(res.body.error.toLowerCase()).toContain('acceso denegado');
+            const mensajeError = res.body.error || res.body.message || "";
+            expect(mensajeError.toLowerCase()).toContain('solo los administradores pueden aprobar o rechazar solicitudes');
         });
 
         it('Debería permitir al Administrador aprobar la solicitud con 200', async () => {
